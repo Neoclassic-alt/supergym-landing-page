@@ -1,11 +1,22 @@
 const swiper = new Swiper('.swiper-1', {
   loop: true,
-  slidesPerView: 4,
+  slidesPerView: 1,
   navigation: {
     nextEl: '.swiper-button-next-1',
     prevEl: '.swiper-button-prev-1',
   },
-  spaceBetween: 40
+  spaceBetween: 40,
+  breakpoints: {
+    768: {
+      slidesPerView: 2,
+    },
+    1080: {
+      slidesPerView: 3,
+    },
+    1225: {
+      slidesPerView: 4,
+    }
+  }
 });
 
 const swiper2 = new Swiper('.swiper-2', {
@@ -149,3 +160,85 @@ window.addEventListener("DOMContentLoaded", function() {
 });
 
 });
+
+// == Валидация формы == //
+
+const textValid1 = document.querySelector(".novalid-text-1")
+const textValid2 = document.querySelector(".novalid-text-2")
+const nameInput = document.querySelector("[name='name']")
+const phoneInput = document.querySelector("[name='phone']")
+const submitButton = document.querySelector(".pre-footer-submit")
+
+let timer = 30
+let errors = 0
+
+nameInput.addEventListener("input", (event) => {
+  if (/[a-z]/.test(nameInput.value)) {
+    textValid1.classList.remove("novalid-text-1")
+    textValid1.innerHTML = "Пожалуйста, вводите только кириллицу"
+    submitButton.disabled = true
+    if (event.inputType == "insertText") {
+      errors += 1
+    }
+  } else if (/[0-9]/.test(nameInput.value)) {
+    textValid1.classList.remove("novalid-text-1")
+    textValid1.innerHTML = "Пожалуйста, вводите только буквы"
+    submitButton.disabled = true
+    if (event.inputType == "insertText") {
+      errors += 1
+    }
+  } else if (/'.*'/.test(nameInput.value)) {
+    textValid1.classList.remove("novalid-text-1")
+    textValid1.innerHTML = "Допускается не более одного апострофа"
+    submitButton.disabled = true
+    if (event.inputType == "insertText") {
+      errors += 1
+    }
+  } else {
+    textValid1.classList.add("novalid-text-1")
+    submitButton.disabled = false
+  }
+
+  if (errors >= 3) {
+    nameInput.disabled = true
+    textValid1.innerHTML = "Ввод заблокирован на 30 секунд"
+
+    setTimeout(() => {
+      nameInput.disabled = false
+      textValid1.classList.add("novalid-text-1")
+      timer = 30
+      errors = 0
+      clearInterval(timerId)
+    }, 30000)
+
+    const timerId = setInterval(() => {
+      timer -= 1
+      textValid1.innerHTML = `Ввод заблокирован на ${timer} секунд`
+    }, 1000)
+  }
+})
+
+const form = document.querySelector(".start-form")
+
+form.addEventListener("submit", async (event) => {
+  event.preventDefault()
+  if (!textValid1.value) {
+    textValid1.classList.remove("novalid-text-1")
+    textValid1.innerHTML = "Поле должно быть заполнено"
+  } else {
+    textValid1.classList.add("novalid-text-1")
+  }
+  if (!textValid2.value) {
+    textValid2.classList.remove("novalid-text-2")
+    textValid2.innerHTML = "Поле должно быть заполнено"
+  } else {
+    textValid1.classList.add("novalid-text-2")
+  }
+  if (textValid1.value && textValid2.value) {
+    const formData = new formData(form)
+    await fetch('/formUrl', { /* отправка на абстрактный бэкенд */
+      method: 'POST',
+      body: formData,
+    })
+  }
+})
